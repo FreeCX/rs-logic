@@ -3,13 +3,11 @@ extern crate rs_logic;
 use rs_logic::element::*;
 
 // NOT X = X NAND X
-fn init_not() -> Element {
-    // init hardcoded NAND component
-    let nand = Element::init_nand();
+pub fn init_not() -> Element {
     // init user NOT component (composit)
     let mut not = Element::init("NOT", 1, 1);
     // push NAND component into NOT
-    let nand_id = not.push_element(nand);
+    let nand_id = not.push_element(Element::init_nand());
     // connect all wires
     not.connect_wire(Wire::InputSelf(0), Wire::Input(nand_id, 0));
     not.connect_wire(Wire::InputSelf(0), Wire::Input(nand_id, 1));
@@ -19,16 +17,13 @@ fn init_not() -> Element {
 
 //              A     B     C
 // X AND Y = (NOT X) NOR (NOT Y)
-fn init_and() -> Element {
-    let not_a = init_not();
-    let not_b = init_not();
-    let nor = Element::init_nor();
+pub fn init_and() -> Element {
     // init user AND component
     let mut and = Element::init("AND", 2, 1);
     // push all components
-    let b = and.push_element(nor);
-    let a = and.push_element(not_a);
-    let c = and.push_element(not_b);
+    let b = and.push_element(Element::init_nor());
+    let a = and.push_element(init_not());
+    let c = and.push_element(init_not());
     // connect A
     and.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
     // connect C
@@ -43,16 +38,13 @@ fn init_and() -> Element {
 
 //             A     B      C
 // X OR Y = (NOT X) NAND (NOT Y)
-fn init_or() -> Element {
-    let not_a = init_not();
-    let not_b = init_not();
-    let nand = Element::init_nand();
+pub fn init_or() -> Element {
     // init user OR component
     let mut or = Element::init("OR", 2, 1);
     // push all components
-    let b = or.push_element(nand);
-    let a = or.push_element(not_a);
-    let c = or.push_element(not_b);
+    let b = or.push_element(Element::init_nand());
+    let a = or.push_element(init_not());
+    let c = or.push_element(init_not());
     // connect A
     or.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
     // connect C
@@ -65,19 +57,15 @@ fn init_or() -> Element {
     or
 }
 
-// SOMETHING WENT WRONG!
 //               A       B     C
 // X XOR Y = (X NAND Y) AND (X OR Y)
-fn init_xor() -> Element {
-    let nand = Element::init_nand();
-    let or = init_or();
-    let and = init_and();
+pub fn init_xor() -> Element {
     // init user XOR component
     let mut xor = Element::init("XOR", 2, 1);
     // push all components
-    let a = xor.push_element(nand);
-    let b = xor.push_element(and);
-    let c = xor.push_element(or);
+    let a = xor.push_element(Element::init_nand());
+    let b = xor.push_element(init_and());
+    let c = xor.push_element(init_or());
     // connect A
     xor.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
     xor.connect_wire(Wire::InputSelf(1), Wire::Input(a, 1));

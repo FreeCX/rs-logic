@@ -1,13 +1,13 @@
-mod element;
+extern crate rs_logic;
 
-use element::*;
+use rs_logic::element::*;
 
 // NOT X = X NAND X
-fn init_not() -> Block {
+fn init_not() -> Element {
     // init hardcoded NAND component
-    let nand = Block::init_nand();
+    let nand = Element::init_nand();
     // init user NOT component (composit)
-    let mut not = Block::init("NOT", 1, 1);
+    let mut not = Element::init("NOT", 1, 1);
     // push NAND component into NOT
     let nand_id = not.push_element(nand);
     // connect all wires
@@ -19,12 +19,12 @@ fn init_not() -> Block {
 
 //              A     B     C
 // X AND Y = (NOT X) NOR (NOT Y)
-fn init_and() -> Block {
+fn init_and() -> Element {
     let not_a = init_not();
     let not_b = init_not();
-    let nor = Block::init_nor();
+    let nor = Element::init_nor();
     // init user AND component
-    let mut and = Block::init("AND", 2, 1);
+    let mut and = Element::init("AND", 2, 1);
     // push all components
     let nid = and.push_element(nor);
     let aid = and.push_element(not_a);
@@ -43,12 +43,12 @@ fn init_and() -> Block {
 
 //             A     B      C
 // X OR Y = (NOT X) NAND (NOT Y)
-fn init_or() -> Block {
+fn init_or() -> Element {
     let not_a = init_not();
     let not_b = init_not();
-    let nand = Block::init_nand();
+    let nand = Element::init_nand();
     // init user OR component
-    let mut or = Block::init("OR", 2, 1);
+    let mut or = Element::init("OR", 2, 1);
     // push all components
     let nid = or.push_element(nand);
     let aid = or.push_element(not_a);
@@ -66,20 +66,27 @@ fn init_or() -> Block {
 }
 
 fn main() {
+    let mut not = init_not();
+    println!("NOT component:");
+    for v1 in vec![0, 1] {
+        not.set_input_wire(0, v1);
+        not.execute();
+        println!("  {:?}", not);
+    }
     let mut and = init_and();
     println!("AND component:");
-    for (w1, w2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
-        and.set_input_wire(0, w1);
-        and.set_input_wire(1, w2);
+    for (v1, v2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
+        and.set_input_wire(0, v1);
+        and.set_input_wire(1, v2);
         and.execute();
-        println!("{:?}", and);
+        println!("  {:?}", and);
     }
     let mut or = init_or();
     println!("OR component:");
-    for (w1, w2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
-        or.set_input_wire(0, w1);
-        or.set_input_wire(1, w2);
+    for (v1, v2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
+        or.set_input_wire(0, v1);
+        or.set_input_wire(1, v2);
         or.execute();
-        println!("{:?}", or);
+        println!("  {:?}", or);
     }
 }

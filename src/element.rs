@@ -20,7 +20,7 @@ pub enum Wire {
     Output(usize, usize)
 }
 
-pub trait Element {
+pub trait LogicElement {
     fn init<S: Into<String>>(name: S, in_wire: usize, out_wire: usize) -> Self;
 
     // work with IO
@@ -36,18 +36,18 @@ pub trait Element {
     fn connect_wire(&mut self, from: Wire, to: Wire);
 }
 
-pub struct Block {
+pub struct Element {
     name: String,
     kind: ElementType,
     input: Vec<u8>,
     output: Vec<u8>,
-    components: Vec<Block>,
+    components: Vec<Element>,
     connections: Vec<(Wire, Wire)>
 }
 
-impl Block {
-    fn atomic_init<S: Into<String>>(name: S, kind: ElementType, in_wire: usize, out_wire: usize) -> Block {
-        Block {
+impl Element {
+    fn atomic_init<S: Into<String>>(name: S, kind: ElementType, in_wire: usize, out_wire: usize) -> Element {
+        Element {
             name: name.into(),
             kind: kind,
             input: vec![0; in_wire],
@@ -56,11 +56,11 @@ impl Block {
             connections: Vec::new(),
         }
     }
-    pub fn init_nand() -> Block {
-        Block::atomic_init("NAND", ElementType::Nand, 2, 1)
+    pub fn init_nand() -> Element {
+        Element::atomic_init("NAND", ElementType::Nand, 2, 1)
     }
-    pub fn init_nor() -> Block {
-        Block::atomic_init("NOR", ElementType::Nor, 2, 1)
+    pub fn init_nor() -> Element {
+        Element::atomic_init("NOR", ElementType::Nor, 2, 1)
     }
     // TODO: check bounds
     fn get_input_wire(&self, wire: usize) -> u8 {
@@ -68,9 +68,9 @@ impl Block {
     }
 }
 
-impl Element for Block {
-    fn init<S: Into<String>>(name: S, in_wire: usize, out_wire: usize) -> Block {
-        Block {
+impl LogicElement for Element {
+    fn init<S: Into<String>>(name: S, in_wire: usize, out_wire: usize) -> Element {
+        Element {
             name: name.into(),
             kind: ElementType::Composite,
             input: vec![0; in_wire],
@@ -132,8 +132,8 @@ impl Element for Block {
     }
 }
 
-impl fmt::Debug for Block {
+impl fmt::Debug for Element {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Block {{ in: {:?}, out: {:?} }}", self.input, self.output)
+        write!(f, "Element {{ in: {:?}, out: {:?} }}", self.input, self.output)
     }
 }

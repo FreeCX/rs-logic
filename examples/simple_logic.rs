@@ -26,18 +26,18 @@ fn init_and() -> Element {
     // init user AND component
     let mut and = Element::init("AND", 2, 1);
     // push all components
-    let nid = and.push_element(nor);
-    let aid = and.push_element(not_a);
-    let bid = and.push_element(not_b);
+    let b = and.push_element(nor);
+    let a = and.push_element(not_a);
+    let c = and.push_element(not_b);
     // connect A
-    and.connect_wire(Wire::InputSelf(0), Wire::Input(aid, 0));
+    and.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
     // connect C
-    and.connect_wire(Wire::InputSelf(1), Wire::Input(bid, 0));
+    and.connect_wire(Wire::InputSelf(1), Wire::Input(c, 0));
     // connect B
-    and.connect_wire(Wire::Output(aid, 0), Wire::Input(nid, 0));
-    and.connect_wire(Wire::Output(bid, 0), Wire::Input(nid, 1));
+    and.connect_wire(Wire::Output(a, 0), Wire::Input(b, 0));
+    and.connect_wire(Wire::Output(c, 0), Wire::Input(b, 1));
     // result to output
-    and.connect_wire(Wire::Output(nid, 0), Wire::OutputSelf(0));
+    and.connect_wire(Wire::Output(b, 0), Wire::OutputSelf(0));
     and
 }
 
@@ -50,19 +50,46 @@ fn init_or() -> Element {
     // init user OR component
     let mut or = Element::init("OR", 2, 1);
     // push all components
-    let nid = or.push_element(nand);
-    let aid = or.push_element(not_a);
-    let bid = or.push_element(not_b);
+    let b = or.push_element(nand);
+    let a = or.push_element(not_a);
+    let c = or.push_element(not_b);
     // connect A
-    or.connect_wire(Wire::InputSelf(0), Wire::Input(aid, 0));
+    or.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
     // connect C
-    or.connect_wire(Wire::InputSelf(1), Wire::Input(bid, 0));
+    or.connect_wire(Wire::InputSelf(1), Wire::Input(c, 0));
     // connect B
-    or.connect_wire(Wire::Output(aid, 0), Wire::Input(nid, 0));
-    or.connect_wire(Wire::Output(bid, 0), Wire::Input(nid, 1));
+    or.connect_wire(Wire::Output(a, 0), Wire::Input(b, 0));
+    or.connect_wire(Wire::Output(c, 0), Wire::Input(b, 1));
     // result to output
-    or.connect_wire(Wire::Output(nid, 0), Wire::OutputSelf(0));
+    or.connect_wire(Wire::Output(b, 0), Wire::OutputSelf(0));
     or
+}
+
+// SOMETHING WENT WRONG!
+//               A       B     C
+// X XOR Y = (X NAND Y) AND (X OR Y)
+fn init_xor() -> Element {
+    let nand = Element::init_nand();
+    let or = init_or();
+    let and = init_and();
+    // init user XOR component
+    let mut xor = Element::init("XOR", 2, 1);
+    // push all components
+    let a = xor.push_element(nand);
+    let b = xor.push_element(and);
+    let c = xor.push_element(or);
+    // connect A
+    xor.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
+    xor.connect_wire(Wire::InputSelf(1), Wire::Input(a, 1));
+    // connect C
+    xor.connect_wire(Wire::InputSelf(0), Wire::Input(c, 0));
+    xor.connect_wire(Wire::InputSelf(1), Wire::Input(c, 1));
+    // connect B
+    xor.connect_wire(Wire::Output(a, 0), Wire::Input(b, 0));
+    xor.connect_wire(Wire::Output(c, 0), Wire::Input(b, 1));
+    // result to output
+    xor.connect_wire(Wire::Output(b, 0), Wire::OutputSelf(0));
+    xor
 }
 
 fn main() {
@@ -71,22 +98,26 @@ fn main() {
     for v1 in vec![0, 1] {
         not.set_input_wire(0, v1);
         not.execute();
-        println!("  {:?}", not);
+        println!("  [{}] -> {:?}", v1, not.get_output());
     }
     let mut and = init_and();
-    println!("AND component:");
-    for (v1, v2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
-        and.set_input_wire(0, v1);
-        and.set_input_wire(1, v2);
-        and.execute();
-        println!("  {:?}", and);
-    }
+    let mut and_result = String::new();
     let mut or = init_or();
-    println!("OR component:");
+    let mut or_result = String::new();
+    let mut xor = init_xor();
+    let mut xor_result = String::new();
     for (v1, v2) in vec![(0, 0), (0, 1), (1, 0), (1, 1)] {
-        or.set_input_wire(0, v1);
-        or.set_input_wire(1, v2);
+        and.set_input(vec![v1, v2]);
+        and.execute();
+        or.set_input(vec![v1, v2]);
         or.execute();
-        println!("  {:?}", or);
+        xor.set_input(vec![v1, v2]);
+        xor.execute();
+        and_result.push_str(&format!("\n  {:?} -> {:?}", &[v1, v2], and.get_output()));
+        or_result.push_str(&format!("\n  {:?} -> {:?}", &[v1, v2], or.get_output()));
+        xor_result.push_str(&format!("\n  {:?} -> {:?}", &[v1, v2], xor.get_output()));
     }
+    println!("AND component:{}", and_result);
+    println!("OR component:{}", or_result);
+    println!("XOR component:{}", xor_result);
 }

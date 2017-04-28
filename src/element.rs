@@ -8,6 +8,7 @@ enum ElementType {
     Composite
 }
 
+// TODO: add feedback wire to solve trigger problem
 #[derive(Debug, Clone, Copy)]
 pub enum Wire {
     //        wire
@@ -28,6 +29,9 @@ pub trait LogicElement {
     fn set_input_wire(&mut self, wire: usize, input: u8);
     fn get_output(&self) -> &[u8];
     fn get_output_wire(&self, wire: usize) -> u8;
+
+    // init IO
+    fn set_initial_data<T: Into<Vec<u8>>>(&mut self, input: T, output: T);
 
     fn execute(&mut self);
 
@@ -94,6 +98,10 @@ impl LogicElement for Element {
     // TODO: check bounds
     fn get_output_wire(&self, wire: usize) -> u8 {
         self.output[wire]
+    }
+    fn set_initial_data<T: Into<Vec<u8>>>(&mut self, input: T, output: T) {
+        self.input = input.into();
+        self.output = output.into();
     }
     fn execute(&mut self) {
         match self.kind {

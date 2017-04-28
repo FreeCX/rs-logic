@@ -18,8 +18,9 @@ fn init_or_not() -> Element {
     or_not
 }
 
-fn init_trigger() -> Element {
+fn init_rs_trigger() -> Element {
     let mut rs = Element::init("RS", 2, 2);
+    rs.set_initial_data(vec![0, 0], vec![0, 1]);
     let o1 = rs.push_element(init_or_not());
     let o2 = rs.push_element(init_or_not());
     // RS
@@ -36,17 +37,16 @@ fn init_trigger() -> Element {
 
 fn main() {
     // RS initial output is (0, 0)
-    let mut rs = init_trigger();
+    let mut rs = init_rs_trigger();
     let input_data = vec![(1, 0), (1, 1), (0, 1)];
     let output_data = vec![(0, 1), (0, 0), (1, 0)];
-    println!("RS trigger\n Q nQ   R  S       Q nQ");
+    println!("RS trigger\n R  S       Q nQ | Q nQ");
     //      R   S     Q  nQ
     for (&(v1, v2), (r1, r2)) in input_data.iter().zip(output_data) {
         let state = (rs.get_output_wire(0), rs.get_output_wire(1));
         rs.set_input(vec![v1, v2]);
         rs.execute();
         let r = rs.get_output();
-        let status = if r[0] == r1 && r[1] == r2 { "SUCCESS" } else { "FAILED" };
-        println!("{:?} {:?} --> {:?}: {}", state, &[v1, v2], r, status);
+        println!("{:?} --> {:?} {:?}", &[v1, v2], state, r);
     }
 }

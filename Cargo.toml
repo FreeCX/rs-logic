@@ -10,6 +10,6 @@ name = "simple_logic"
 name = "full_adder"
 
 [[example]]
-name = "trigger"
+name = "rs_trigger"
 
 [dependencies]

@@ -15,45 +15,39 @@ pub fn init_not() -> Element {
     not
 }
 
-//              A     B     C
-// X AND Y = (NOT X) NOR (NOT Y)
+//            A     B
+// X OR Y = NOT (X NAND Y)
 pub fn init_and() -> Element {
     // init user AND component
     let mut and = Element::init("AND", 2, 1);
     // push all components
-    let b = and.push_element(Element::init_nor());
     let a = and.push_element(init_not());
-    let c = and.push_element(init_not());
-    // connect A
-    and.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
-    // connect C
-    and.connect_wire(Wire::InputSelf(1), Wire::Input(c, 0));
-    // connect B
-    and.connect_wire(Wire::Output(a, 0), Wire::Input(b, 0));
-    and.connect_wire(Wire::Output(c, 0), Wire::Input(b, 1));
-    // result to output
-    and.connect_wire(Wire::Output(b, 0), Wire::OutputSelf(0));
+    let b = and.push_element(Element::init_nand());
+    // B = X NAND Y
+    and.connect_wire(Wire::InputSelf(0), Wire::Input(b, 0));
+    and.connect_wire(Wire::InputSelf(1), Wire::Input(b, 1));
+    // A = NOT B
+    and.connect_wire(Wire::Output(b, 0), Wire::Input(a, 0));
+    // set result
+    and.connect_wire(Wire::Output(a, 0), Wire::OutputSelf(0));
     and
 }
 
-//             A     B      C
-// X OR Y = (NOT X) NAND (NOT Y)
+//            A     B
+// X OR Y = NOT (X NOR Y)
 pub fn init_or() -> Element {
     // init user OR component
     let mut or = Element::init("OR", 2, 1);
     // push all components
-    let b = or.push_element(Element::init_nand());
     let a = or.push_element(init_not());
-    let c = or.push_element(init_not());
-    // connect A
-    or.connect_wire(Wire::InputSelf(0), Wire::Input(a, 0));
-    // connect C
-    or.connect_wire(Wire::InputSelf(1), Wire::Input(c, 0));
-    // connect B
-    or.connect_wire(Wire::Output(a, 0), Wire::Input(b, 0));
-    or.connect_wire(Wire::Output(c, 0), Wire::Input(b, 1));
-    // result to output
-    or.connect_wire(Wire::Output(b, 0), Wire::OutputSelf(0));
+    let b = or.push_element(Element::init_nor());
+    // B = X NOR Y
+    or.connect_wire(Wire::InputSelf(0), Wire::Input(b, 0));
+    or.connect_wire(Wire::InputSelf(1), Wire::Input(b, 1));
+    // A = NOT B
+    or.connect_wire(Wire::Output(b, 0), Wire::Input(a, 0));
+    // set result
+    or.connect_wire(Wire::Output(a, 0), Wire::OutputSelf(0));
     or
 }
 

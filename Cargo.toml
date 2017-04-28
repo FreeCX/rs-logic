@@ -9,4 +9,7 @@ name = "simple_logic"
 [[example]]
 name = "full_adder"
 
+[[example]]
+name = "trigger"
+
 [dependencies]
